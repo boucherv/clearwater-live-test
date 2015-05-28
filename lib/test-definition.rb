@@ -34,6 +34,7 @@
 
 require 'timeout'
 require "snmp"
+require 'json'
 require_relative "ellis"
 require_relative "quaff-endpoint"
 require_relative "fake-endpoint"
@@ -108,6 +109,7 @@ class TestDefinition
   def self.run_all(deployment, glob)
     ENV['REPEAT'] ||= "1"
     ENV['TRANSPORT'] ||= "tcp,udp"
+    json_result = {}
     repeat = ENV['REPEAT'].to_i
     req_transports = ENV['TRANSPORT'].downcase.split(',').map { |t| t.to_sym }
     transports = [:tcp, :udp].select { |t| req_transports.include? t }
@@ -134,6 +136,7 @@ class TestDefinition
           end
           success = test.run(deployment, trans)
           if success == true
+            json_result[:test.name] = "Passed"
             puts RedGreen::Color.green("Passed")
           elsif success == false
             record_failure
