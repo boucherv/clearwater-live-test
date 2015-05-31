@@ -136,21 +136,27 @@ class TestDefinition
           end
           success = test.run(deployment, trans)
           if success == true
-            json_result[:test.name] = "Passed"
+            json_result[test.name] = "Passed"
             puts RedGreen::Color.green("Passed")
           elsif success == false
+            json_result[test.name] = "Failed"
             record_failure
           end # Do nothing if success == nil - that means we skipped a test
         rescue SkipThisTest => e
+          json_result[test.name] = "Skipped"
           puts RedGreen::Color.yellow("Skipped") + " (#{e.why_skipped})"
           puts "   - #{e.how_to_enable}" if e.how_to_enable
         rescue StandardError => e
           record_failure
+          json_result[test.name] = "Failed"
           puts RedGreen::Color.red("Failed")
           puts "  #{e.class} thrown:"
           puts "   - #{e}"
           puts e.backtrace.map { |line| "     - " + line }.join("\n")
         end
+      end
+      File.open("temp.json","w") do |f|
+        f.write(json_result.to_json)
       end
     end
   end
