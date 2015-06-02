@@ -109,7 +109,8 @@ class TestDefinition
   def self.run_all(deployment, glob)
     ENV['REPEAT'] ||= "1"
     ENV['TRANSPORT'] ||= "tcp,udp"
-    json_result = {}
+    json_result = []
+    nrow = 0
     repeat = ENV['REPEAT'].to_i
     req_transports = ENV['TRANSPORT'].downcase.split(',').map { |t| t.to_sym }
     transports = [:tcp, :udp].select { |t| req_transports.include? t }
@@ -136,24 +137,29 @@ class TestDefinition
           end
           success = test.run(deployment, trans)
           if success == true
-            json_result[test.name] = "Passed"
+            json_result[nrow]['name'] = test.name
+            json_result[nrow]['result'] = "Passed"
             puts RedGreen::Color.green("Passed")
           elsif success == false
-            json_result[test.name] = "Failed"
+            json_result[nrow]['name'] = test.name
+            json_result[nrow]['result'] = "Failed"
             record_failure
           end # Do nothing if success == nil - that means we skipped a test
         rescue SkipThisTest => e
-          json_result[test.name] = "Skipped"
+            json_result[nrow]['name'] = test.name
+            json_result[nrow]['result'] = "Skipped"
           puts RedGreen::Color.yellow("Skipped") + " (#{e.why_skipped})"
           puts "   - #{e.how_to_enable}" if e.how_to_enable
         rescue StandardError => e
           record_failure
-          json_result[test.name] = "Failed"
+          json_result[nrow]['name'] = test.name
+          json_result[nrow]['result'] = "Failed"
           puts RedGreen::Color.red("Failed")
           puts "  #{e.class} thrown:"
           puts "   - #{e}"
           puts e.backtrace.map { |line| "     - " + line }.join("\n")
         end
+        nrow += 1
       end
       File.open("temp.json","w") do |f|
         f.write(json_result.to_json)
