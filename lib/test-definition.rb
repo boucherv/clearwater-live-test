@@ -138,19 +138,19 @@ class TestDefinition
           end
           success = test.run(deployment, trans)
           if success == true
-            array_result << [test.name,"Passed"]
+            array_result << [test_id,"Passed"]
             puts RedGreen::Color.green("Passed")
           elsif success == false
-            array_result << [test.name,"Failed"]
+            array_result << [test_id,"Failed"]
             record_failure
           end # Do nothing if success == nil - that means we skipped a test
         rescue SkipThisTest => e
-            array_result << [test.name,"Skipped"]
+            array_result << [test_id,"Skipped"]
           puts RedGreen::Color.yellow("Skipped") + " (#{e.why_skipped})"
           puts "   - #{e.how_to_enable}" if e.how_to_enable
         rescue StandardError => e
           record_failure
-            array_result << [test.name,"Failed"]
+            array_result << [test_id,"Failed"]
           puts RedGreen::Color.red("Failed")
           puts "  #{e.class} thrown:"
           puts "   - #{e}"
