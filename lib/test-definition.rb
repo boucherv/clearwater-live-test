@@ -35,6 +35,7 @@
 require 'timeout'
 require "snmp"
 require 'json'
+require 'time'
 require_relative "ellis"
 require_relative "quaff-endpoint"
 require_relative "fake-endpoint"
@@ -133,31 +134,35 @@ class TestDefinition
         begin
           test_id = "#{test.name} (#{trans.to_s.upcase})"
           print "#{test_id} - "
+          time_start = Time.now
           if tests_to_exclude.include? test_id
             raise SkipThisTest.new("Test skipped by EXCLUDE_TESTS")
           end
           success = test.run(deployment, trans)
+          time_elapsed = (Time.now - time_start).round(1)
           if success == true
-            array_result << [test_id,"Passed"]
+            array_result << [test_id,"Passed","",time_elapsed]
             puts RedGreen::Color.green("Passed")
           elsif success == false
-            array_result << [test_id,"Failed"]
+            array_result << [test_id,"Failed","",time_elapsed]
             record_failure
           end # Do nothing if success == nil - that means we skipped a test
         rescue SkipThisTest => e
-            array_result << [test_id,"Skipped"]
+          time_elapsed = (Time.now - time_start).round(1)
+          array_result << [test_id,"Skipped","",time_elapsed]
           puts RedGreen::Color.yellow("Skipped") + " (#{e.why_skipped})"
           puts "   - #{e.how_to_enable}" if e.how_to_enable
         rescue StandardError => e
+          time_elapsed = (Time.now - time_start).round(1)
           record_failure
-            array_result << [test_id,"Failed"]
+            array_result << [test_id,"Failed",e,time_elapsed]
           puts RedGreen::Color.red("Failed")
           puts "  #{e.class} thrown:"
           puts "   - #{e}"
           puts e.backtrace.map { |line| "     - " + line }.join("\n")
         end
       end
-      array_result.each { |record| hash_result << {'name' => record[0], 'result' => record[1]} }
+      array_result.each { |record| hash_result << {'name' => record[0], 'result' => record[1], 'error' => record[2], 'duration' => record[3]} }
       File.open("temp.json","w") do |f|
         f.write(hash_result.to_json)
       end
