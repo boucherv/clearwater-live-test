@@ -107,14 +107,14 @@ class TestDefinition
 
   def self.run_all(deployment, glob)
     ENV['REPEAT'] ||= "1"
-    ENV['TRANSPORT'] ||= "tcp,udp"
+    ENV['TRANSPORT'] ||= "tcp"
     array_result = []
     hash_result = []
     repeat = ENV['REPEAT'].to_i
     req_transports = ENV['TRANSPORT'].downcase.split(',').map { |t| t.to_sym }
     transports = [:tcp, :udp].select { |t| req_transports.include? t }
 
-    unless req_transports == transports
+    unless req_transports.sort == transports.sort
       STDERR.puts "ERROR: Unsupported transports #{req_transports - transports} requested"
       exit 2
     end
