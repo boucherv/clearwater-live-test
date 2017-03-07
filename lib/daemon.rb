@@ -4,7 +4,8 @@ require 'daemons'
 require 'pathname'
 require 'ffi-rzmq'
 require 'syslog'
-require_relative './live-test'
+require 'json'
+require_relative './live-test-base'
 
 def source(file, vars)
   # Replace the specified variables in our environment with those read from file.
@@ -14,39 +15,29 @@ def source(file, vars)
   ENV.replace(eval(`/bin/bash -c 'source #{file} && export #{vars.join " "} && ruby -e "p ENV"'`))
 end
 
-def raise_alarm(id)
-  context = ZMQ::Context.new
-  client = context.socket(ZMQ::REQ)
-  client.connect("tcp://127.0.0.1:6664")
+def raise_alarm(zmq, status)
 
-  poller = ZMQ::Poller.new
-  poller.register(client, ZMQ::POLLIN)
+  data = {:dep_id => ENV['deployment_id'], :test_type => "basic", :test_worker => ENV['test_worker_id'], :status => status}.to_json
+  puts data
+  zmq.send_string data
 
-  client.send_strings ["issue-alarm", "clearwater-live-verification", id]
-
-  poller.poll(2000)
-
-  if poller.readables.include? client
-    response = []
-    client.recv_strings(response)
-  else
-    Syslog.err("Dropped alarm #{id}")
-  end
-
-  client.close
 end
 
 path = Pathname.new("/var/log/clearwater-live-verification/");
 Daemons.run_proc("clearwater-live-verification",
                  dir_mode: :normal,
                  dir: path) do
+
+  ctx = ZMQ::Context.new(1)
+  zmq = ctx.socket(ZMQ::PUB)
+  zmq.connect("tcp://84.39.50.209:5556")
   # Initially we don't know the state of the deployment
-  raise_alarm("6000.2")
+  raise_alarm(zmq, 0)
 
   loop do
 
     # Refresh the important environment variables from /etc/clearwater/config.
-    source("/etc/clearwater/config", ["home_domain", "ellis_address", "pcscf_address", "signup_key"])
+    #source("/etc/clearwater/config", ["home_domain", "ellis_address", "pcscf_address", "signup_key"])
     if ENV['ellis_hostname'] then
       ENV['ELLIS'] = ENV['ellis_hostname']
     else
@@ -59,6 +50,7 @@ Daemons.run_proc("clearwater-live-verification",
     end
     ENV['SIGNUP_CODE'] = ENV['signup_key']
     ENV['TRANSPORT'] = 'tcp'
+    ENV['ELLIS_USER'] = ENV['test_worker_id'] + "@example.com"
 
     # These tests exit with their success code so catch the exit status here.
     begin
@@ -69,10 +61,10 @@ Daemons.run_proc("clearwater-live-verification",
 
     if success == 0 then
       # Tests passed - clear the alarm
-      raise_alarm("6000.1")
+      raise_alarm(zmq, 1)
     else
       # Tests failed - raise the critical alarm
-      raise_alarm("6000.3")
+      raise_alarm(zmq, 0)
 
       # Sleep for a bit (failing the test can happen very fast and we don't
       # want to DoS the deployment.
