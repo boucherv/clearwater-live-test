@@ -54,7 +54,7 @@ Daemons.run_proc("clearwater-live-verification",
 
     # These tests exit with their success code so catch the exit status here.
     begin
-      run_tests(ENV['home_domain'], "Basic *")
+      run_tests_base(ENV['home_domain'], "Basic *")
     rescue SystemExit => e
       success = e.status
     end
