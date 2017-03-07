@@ -95,6 +95,10 @@ class TestDefinition
     @@failures
   end
 
+  def self.reset_failures
+    @@failures = 0
+  end
+
   def self.get_diags
     Dir["scripts/*.log"]
   end

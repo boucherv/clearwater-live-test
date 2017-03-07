@@ -44,7 +44,7 @@ require_relative 'ellis'
 def run_tests_base(domain, glob="*")
   # Load and run all the tests
   Dir[File.join(File.dirname(__FILE__), "tests", "*.rb")].sort.each { |f| require f }
-  TestDefinition.failures = 0
+  TestDefinition.reset_failures
   TestDefinition.run_all(domain, Wildcard[glob, true])
 
   # Cleanup leaked numbers.  Ignore (but print, using the magic exception
