@@ -271,7 +271,7 @@ class TestDefinition
     @deployment = deployment
     @transport = transport
     @used_number = []
-    #@endpoints.clear
+    @endpoints.clear
     @quaff_scenario_blocks = []
     @quaff_threads = []
     @quaff_setup_blk = nil
