@@ -159,6 +159,9 @@ class EllisProvisionedLine
     end
   end
 
+  def self.get_sip_uri
+    @sip_uri
+  end
 
 private
 

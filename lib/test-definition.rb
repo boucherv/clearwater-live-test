@@ -203,6 +203,7 @@ class TestDefinition
 
   def add_endpoint line=nil, use_instance_id=true
     line ||= provision_line
+    @used_number << line
     include_endpoint QuaffEndpoint.new(line, @transport, @endpoints.length, use_instance_id)
   end
 
@@ -269,9 +270,8 @@ class TestDefinition
     before_run
     @deployment = deployment
     @transport = transport
-    puts @endpoints
-    @endpoints.clear
-    puts @endpoints
+    @used_number = []
+    #@endpoints.clear
     @quaff_scenario_blocks = []
     @quaff_threads = []
     @quaff_setup_blk = nil
@@ -286,6 +286,7 @@ class TestDefinition
       retval = extra_validation
       verify_snmp_stats if ENV['SNMP'] == "Y"
     ensure
+      @used_number.each {|i| i.cleanup }
       retval &= cleanup
       TestDefinition.unset_current_test
     end
