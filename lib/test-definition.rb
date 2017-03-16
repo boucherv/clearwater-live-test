@@ -74,6 +74,7 @@ class TestDefinition
   attr_writer :timeout
 
   @@tests = []
+  @@number_queue = Queue.new
   @@current_test = nil
   @@failures = 0
 
@@ -268,6 +269,9 @@ class TestDefinition
     before_run
     @deployment = deployment
     @transport = transport
+    puts @endpoints
+    @endpoints.clear
+    puts @endpoints
     @quaff_scenario_blocks = []
     @quaff_threads = []
     @quaff_setup_blk = nil
@@ -345,7 +349,18 @@ class TestDefinition
   # Methods for provisioning/retrieving various types of users
 
   def provision_line
-    EllisProvisionedLine.new(@deployment)
+    begin
+        i=0
+        puts @@number_queue.size
+        while i < 10 && @@number_queue.size < 11 do
+          @@number_queue << EllisProvisionedLine.new(@deployment)
+          i += 1
+        end
+    rescue
+      puts 'Error when creating new number'
+    ensure
+      return @@number_queue.pop
+    end
   end
 
   def provision_specific_line user_part

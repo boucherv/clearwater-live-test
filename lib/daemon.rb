@@ -54,7 +54,7 @@ Daemons.run_proc("clearwater-live-verification",
 
     # These tests exit with their success code so catch the exit status here.
     begin
-      run_tests_base(ENV['home_domain'], "Basic *")
+      run_tests_base(ENV['home_domain'], "Basic Call - Mainline")
     rescue SystemExit => e
       success = e.status
     end
@@ -68,7 +68,7 @@ Daemons.run_proc("clearwater-live-verification",
 
       # Sleep for a bit (failing the test can happen very fast and we don't
       # want to DoS the deployment.
-      sleep 30
+      sleep 5
     end
   end
 end

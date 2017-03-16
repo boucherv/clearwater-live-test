@@ -49,10 +49,10 @@ def run_tests_base(domain, glob="*")
 
   # Cleanup leaked numbers.  Ignore (but print, using the magic exception
   # variables) any exceptions.
-  EllisProvisionedLine.destroy_leaked_numbers(domain) rescue puts $!, $@
+  # EllisProvisionedLine.destroy_leaked_numbers(domain) rescue puts $!, $@
 
   puts TestDefinition.failures
-  exit (TestDefinition.failures <= 1) ? 0 : 1
+  exit (TestDefinition.failures < 1) ? 0 : 1
 end
 
 def is_default_public_id? number
