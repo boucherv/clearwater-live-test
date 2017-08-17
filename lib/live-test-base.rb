@@ -36,7 +36,6 @@
 
 require 'rubygems'
 require 'rest-client'
-require 'joker'
 require_relative 'test-definition'
 require_relative 'sipp-test-definition'
 require_relative 'ellis'
@@ -45,7 +44,7 @@ def run_tests_base(domain, glob="*")
   # Load and run all the tests
   Dir[File.join(File.dirname(__FILE__), "tests", "*.rb")].sort.each { |f| require f }
   TestDefinition.reset_failures
-  TestDefinition.run_all(domain, Wildcard[glob, true])
+  TestDefinition.run_all(domain)
 
   # Cleanup leaked numbers.  Ignore (but print, using the magic exception
   # variables) any exceptions.
