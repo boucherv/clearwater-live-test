@@ -109,7 +109,7 @@ class TestDefinition
     end
   end
 
-  def self.run_all(deployment, glob)
+  def self.run_all(deployment)
     ENV['REPEAT'] ||= "1"
     ENV['TRANSPORT'] ||= "tcp"
     array_result = []
@@ -123,7 +123,7 @@ class TestDefinition
       exit 2
     end
     clear_diags
-    tests_to_run = @@tests.select { |t| t.name =~ glob }
+    tests_to_run = @@tests.select { |t| t.name == true}
     tests_to_exclude = if ENV['EXCLUDE_TESTS']
                          ENV['EXCLUDE_TESTS'].split ","
                        else
