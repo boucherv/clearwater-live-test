@@ -123,7 +123,7 @@ class TestDefinition
       exit 2
     end
     clear_diags
-    tests_to_run = @@tests.select { |t| t.name == true}
+    tests_to_run = @@tests
     tests_to_exclude = if ENV['EXCLUDE_TESTS']
                          ENV['EXCLUDE_TESTS'].split ","
                        else
